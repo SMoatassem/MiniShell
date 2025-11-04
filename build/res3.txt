@@ -1,0 +1,1 @@
+Erreur d'ouverture du fichier, le nom est resasd.txt

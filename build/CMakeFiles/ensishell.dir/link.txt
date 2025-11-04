@@ -1,0 +1,1 @@
+/usr/bin/cc -g  -Wall -Wextra -fanalyzer -Wl,--dependency-file=CMakeFiles/ensishell.dir/link.d CMakeFiles/ensishell.dir/src/readcmd.c.o CMakeFiles/ensishell.dir/src/ensishell.c.o -o ensishell  -lreadline -lhistory

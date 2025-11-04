@@ -1,0 +1,31 @@
+Start testing: Nov 04 22:37 CET
+----------------------------------------------------------
+1/1 Testing: UnitShellTests
+1/1 Test: UnitShellTests
+Command: "/home/moatassem/Cours/2A/SEPC/ensimag-shell/tests/allShellTests.rb"
+Directory: /home/moatassem/Cours/2A/SEPC/ensimag-shell/build
+"UnitShellTests" start time: Nov 04 22:37 CET
+Output:
+----------------------------------------------------------
+Run options: --seed 4269
+
+# Running:
+
+..pipe 17 17
+........
+
+Finished in 0.059904s, 166.9342 runs/s, 283.7882 assertions/s.
+
+10 runs, 17 assertions, 0 failures, 0 errors, 0 skips
+real 3.00
+user 0.00
+sys 0.00
+<end of output>
+Test time =  10.19 sec
+----------------------------------------------------------
+Test Passed.
+"UnitShellTests" end time: Nov 04 22:38 CET
+"UnitShellTests" time elapsed: 00:00:10
+----------------------------------------------------------
+
+End testing: Nov 04 22:38 CET
