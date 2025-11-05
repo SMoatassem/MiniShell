@@ -125,7 +125,7 @@ int main() {
 	int nbr_bg = 0; // Nombre des processus en tache de fond
 	char** l_bg = NULL ;
 	int* pids_bg = NULL;
-	int fd_save = dup(STDOUT_FILENO); // On fait des sauvegarde pour pouvoir les restaurer après le < ou >
+	int fd_save = dup(STDOUT_FILENO);
 	if (fd_save == -1){
 		perror("dup fd_out_save unsucessful\n");
 		exit(EXIT_FAILURE);
@@ -144,7 +144,7 @@ int main() {
 #endif
 
 	while (1) {
-		int ret_dup = dup2(fd_save, STDOUT_FILENO); // Réinitialisation nécessaire ou pas? (à revoir)
+		int ret_dup = dup2(fd_save, STDOUT_FILENO);
 		if (ret_dup == -1){
 			perror("dup2_out unsucessful\n");
 			exit(EXIT_FAILURE);
@@ -219,31 +219,26 @@ int main() {
 			cpt += 1;
 		}
 		// Cas de redirection vers un fichier (qst 6)
-
-		if (l->in){
-			// printf("on rentre ici\n");
-			int fd_in = open(l->in, O_RDONLY);
-			if (fd_in == -1){
-				printf("Fichier %s introuvable\n", l->in);
-				close(fd_in);
-				continue;
-			}
-			dup2(fd_in, STDIN_FILENO);
-			close(fd_in);
-			// printf("Redirection entrée depuis : %s\n", l->in);
-		}
-
 		if (l->out){
 			int fd = open(l->out, O_WRONLY|O_CREAT|O_TRUNC, 0644);
 			if (fd == -1){
 				printf("Erreur d'ouverture du fichier, le nom est %s\n", l->out);
-				close(fd);
-				continue;
+				break;
 			}
 			dup2(fd, STDOUT_FILENO);
 			close(fd);
 		}
 
+		if (l->in){
+			// printf("on rentre ici\n");
+			int fd_in = open(l->in, O_RDONLY);
+			if (fd_in == -1){
+				printf("Erreur d'ouverture du fichier, le nom est %s\n", l->in);
+			}
+			dup2(fd_in, STDIN_FILENO);
+			close(fd_in);
+			// printf("Redirection entrée depuis : %s\n", l->in);
+		}
 		if (cpt == 1){
 			/*
 				AJOUT fichiers
@@ -297,80 +292,23 @@ int main() {
 					int fd_in = open(l->in, O_RDONLY);
 					dup2(fd_in, STDIN_FILENO);
 				}
-				dup2(tuyau[1], STDOUT_FILENO); // la sortie de la première commande (par exemple celle de ls dans ls | grep), sort dans tuyau[1] au lieu de stdout
+				dup2(tuyau[1], STDOUT_FILENO);
 				close(tuyau[0]);
-				close(tuyau[1]);               // ajouté pour tester
-
 				execvp(command1, argumentlist1);
 			}
 			else{
-				int pid2 = fork(); // Ici on est dans le père, son stdout n'était pas modifié!
+				int pid2 = fork();
 				if (pid2 == 0){
 					dup2(tuyau[0], STDIN_FILENO);
 					close(tuyau[1]);
-					close(tuyau[0]); // Ajouter pour tester
 					execvp(command2, argumentlist2);
 				}
 				close(tuyau[0]); // A revoir
 				close(tuyau[1]); // A revoir
 				while (wait(NULL) > 0); // A revoir
 			}
-		}
-
 		
-		// Pipes multiples (sec 6.5)
-		if (cpt > 2){
-			int tuyau[2];
-			pipe(tuyau);
 
-			char** argumentlist1 = l->seq[0];
-			char* command1 = argumentlist1[0];
-			
-			int pid1 = fork(); // Pour faire un pipeline, les deux doivent être des frères 
-			
-			if (pid1 == 0){
-				if (l->in){
-					int fd_in = open(l->in, O_RDONLY);
-					dup2(fd_in, STDIN_FILENO);
-				}
-				dup2(tuyau[1], STDOUT_FILENO); // la sortie de la première commande (par exemple celle de ls dans ls | grep), sort dans tuyau[1] au lieu de stdout
-				close(tuyau[0]);
-				close(tuyau[1]);
-				execvp(command1, argumentlist1);
-			}
-			
-			for (int i = 1; i < cpt ; i++){
-
-
-				char** argumentlist2 = l->seq[i];
-				char* command2 = argumentlist2[0];
-
-
-
-				int pid2 = fork(); // Ici on est dans le père, son stdout n'était pas modifié!
-				if (pid2 == 0){
-					dup2(tuyau[0], STDIN_FILENO);
-
-					if (i != cpt - 1){
-						dup2(tuyau[1], STDOUT_FILENO);
-					}
-					close(tuyau[0]);
-					close(tuyau[1]);
-					execvp(command2, argumentlist2);
-				}
-
-	
-			}
-			// le père
-			close(tuyau[0]);
-			close(tuyau[1]);
-
-			int status;
-			pid_t pid;
-			while ((pid = wait(&status)) > 0) { // problème, le père attend toujours (faut avoir plusieurs tuyaux?)
-				printf("Processus fils %d terminé\n", pid);
-			}
-			printf("salam\n");
 		}
 	}
 	free(pids_bg);
